@@ -27,7 +27,7 @@ export class FastReverseGeocoder {
    * @param {string} [dbPath] Path to the geonames.sqlite database file.
    */
   constructor(dbPath) {
-    this.dbPath = dbPath || path.join(__dirname, 'geonames.sqlite');
+    this.dbPath = dbPath || path.resolve(__dirname, 'geonames.sqlite');
     this.db = null;
     this._queryRunner = null;
     this.init();
@@ -43,11 +43,11 @@ export class FastReverseGeocoder {
     }
 
     if (options.dbPath) {
-      this.dbPath = options.dbPath;
+      this.dbPath = path.resolve(options.dbPath);
     }
 
     if (!fs.existsSync(this.dbPath)) {
-      const err = new Error(`GeoNames database not found at ${this.dbPath}. Please run 'bun run build:db' first.`);
+      const err = new Error(`GeoNames database not found at "${this.dbPath}". Please verify that geonames.sqlite exists.`);
       if (callback) return callback(err);
       throw err;
     }
@@ -86,9 +86,21 @@ export class FastReverseGeocoder {
     // 1. Check for Bun runtime
     if (typeof Bun !== 'undefined') {
       const { Database } = require('bun:sqlite');
-      this.db = new Database(this.dbPath, { readonly: true });
-      const stmt = this.db.query(sql);
-      this._queryRunner = (minLat, maxLat, minLon, maxLon) => stmt.all(minLat, maxLat, minLon, maxLon);
+      try {
+        this.db = new Database(this.dbPath, { readonly: true, create: false });
+        const stmt = this.db.query(sql);
+        this._queryRunner = (minLat, maxLat, minLon, maxLon) => stmt.all(minLat, maxLat, minLon, maxLon);
+      } catch (e) {
+        try {
+          this.db = new Database(this.dbPath, { create: false });
+          const stmt = this.db.query(sql);
+          this._queryRunner = (minLat, maxLat, minLon, maxLon) => stmt.all(minLat, maxLat, minLon, maxLon);
+        } catch (innerErr) {
+          const err = new Error(`Failed to open SQLite database at "${this.dbPath}": ${innerErr}`);
+          if (callback) return callback(err);
+          throw err;
+        }
+      }
     } else {
       // 2. Node.js built-in node:sqlite
       try {
@@ -97,7 +109,7 @@ export class FastReverseGeocoder {
         const stmt = this.db.prepare(sql);
         this._queryRunner = (minLat, maxLat, minLon, maxLon) => stmt.all(minLat, maxLat, minLon, maxLon);
       } catch (e) {
-        const err = new Error('SQLite driver not available.');
+        const err = new Error(`Failed to open SQLite in Node.js at "${this.dbPath}": ${e}`);
         if (callback) return callback(err);
         throw err;
       }
@@ -111,17 +123,6 @@ export class FastReverseGeocoder {
 
   /**
    * 🌟 ค้นหาเฉพาะจุดเดียว (Single Point) คืนค่าเป็น GeoResult Object ตรงๆ ไม่ซ้อน Array
-   * 
-   * รองรับ:
-   * - lookUpOne({ latitude: 13.75, longitude: 100.50 })
-   * - lookUpOne({ lat: 13.75, lon: 100.50 })
-   * - lookUpOne(13.75, 100.50)
-   * - lookUpOne([13.75, 100.50])
-   * 
-   * @param {Object|Array|number} point พิกัด
-   * @param {number|Function} [lonOrCb] ลองจิจูด หรือ callback
-   * @param {Function} [cb] callback function
-   * @returns {Object|null} ผลลัพธ์ข้อมูลเมือง หรือ null
    */
   lookUpOne(point, lonOrCb, cb) {
     let lat = NaN;
@@ -168,20 +169,12 @@ export class FastReverseGeocoder {
     return result;
   }
 
-  /**
-   * Async wrapper สำหรับ lookUpOne
-   */
   async lookUpOneAsync(point, lon) {
     return this.lookUpOne(point, lon);
   }
 
   /**
-   * 🔄 ฟังก์ชันเดิม (รองรับ Batch & คืนค่าเป็น 2D Array สไตล์ local-reverse-geocoder ดั้งเดิม)
-   *
-   * @param {Object|Object[]} points พิกัดจุดเดียว หรือ Array ของพิกัด
-   * @param {number|Function} [arg2=1] จำนวนผลลัพธ์ (maxResults) หรือ callback
-   * @param {Function} [arg3] callback function
-   * @returns {Object[][]}
+   * 🔄 ฟังก์ชันเดิม (รองรับ Batch & คืนค่าเป็น 2D Array)
    */
   lookUp(points, arg2, arg3) {
     let callback;

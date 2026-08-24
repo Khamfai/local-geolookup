@@ -1,6 +1,6 @@
 {
   "name": "geonames-fast-reverse-geocoder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ultra-fast offline reverse geocoder for Bun & Node.js using SQLite R*Tree index",
   "main": "index.js",
   "module": "index.js",

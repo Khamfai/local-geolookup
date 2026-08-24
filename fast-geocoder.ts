@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 export interface GeoPoint {
   latitude?: number | string;
@@ -64,24 +64,21 @@ export class FastReverseGeocoder {
   private stmt: ReturnType<Database['query']> | null = null;
 
   constructor(dbPath?: string) {
-    this.dbPath = dbPath || join(import.meta.dir, 'geonames.sqlite');
+    this.dbPath = dbPath || resolve(import.meta.dir, 'geonames.sqlite');
     this.init();
   }
 
   public init(options: { dbPath?: string } = {}): this {
     if (options.dbPath) {
-      this.dbPath = options.dbPath;
+      this.dbPath = resolve(options.dbPath);
     }
 
     if (!existsSync(this.dbPath)) {
       throw new Error(
-        `GeoNames database not found at ${this.dbPath}. Please run 'bun run build:db' first.`
+        `GeoNames database not found at "${this.dbPath}". Please verify that geonames.sqlite exists.`
       );
     }
 
-    this.db = new Database(this.dbPath, { readonly: true });
-
-    // Prepare SQLite R*Tree query for maximum throughput
     const sql = `
       SELECT 
         c.geoname_id AS geoNameId,
@@ -113,23 +110,26 @@ export class FastReverseGeocoder {
       LIMIT 100;
     `;
 
-    this.stmt = this.db.query(sql);
+    // Try opening readonly first, fallback to standard mode if readonly fails
+    try {
+      this.db = new Database(this.dbPath, { readonly: true, create: false });
+      this.stmt = this.db.query(sql);
+    } catch (err) {
+      try {
+        this.db = new Database(this.dbPath, { create: false });
+        this.stmt = this.db.query(sql);
+      } catch (innerErr) {
+        throw new Error(
+          `Failed to open SQLite database at "${this.dbPath}": ${innerErr}`
+        );
+      }
+    }
+
     return this;
   }
 
   /**
    * 🌟 ค้นหาเฉพาะจุดเดียว (Single Point) คืนค่าเป็น GeoResult ตรงๆ ไม่ซ้อน Array
-   * 
-   * รองรับการเรียกหลายรูปแบบ:
-   * - lookUpOne({ latitude: 13.75, longitude: 100.50 })
-   * - lookUpOne({ lat: 13.75, lon: 100.50 })
-   * - lookUpOne(13.75, 100.50)
-   * - lookUpOne([13.75, 100.50])
-   * 
-   * @param point พิกัด (Object, Array, หรือ ละติจูด number)
-   * @param lonOrCb ลองจิจูด number หรือ callback function
-   * @param cb callback function (optional)
-   * @returns GeoResult หรือ null ถ้าหาไม่พบ
    */
   public lookUpOne(
     point: GeoPoint | [number, number] | number,
@@ -180,9 +180,6 @@ export class FastReverseGeocoder {
     return result;
   }
 
-  /**
-   * Async wrapper สำหรับค้นหาจุดเดียว
-   */
   public async lookUpOneAsync(
     point: GeoPoint | [number, number] | number,
     lon?: number
@@ -191,12 +188,7 @@ export class FastReverseGeocoder {
   }
 
   /**
-   * 🔄 ฟังก์ชันเดิม (รองรับ Batch & API ดั้งเดิมของ local-reverse-geocoder คืนค่าเป็น 2D Array)
-   *
-   * @param points พิกัดจุดเดียว หรือ Array ของพิกัด
-   * @param arg2 จำนวนผลลัพธ์ที่ต้องการ (maxResults) หรือ callback
-   * @param arg3 callback function (optional)
-   * @returns GeoResult[][] (Array 2 มิติ)
+   * 🔄 ฟังก์ชันเดิม (รองรับ Batch & API ดั้งเดิม คืนค่าเป็น 2D Array)
    */
   public lookUp(
     points: GeoPoint | GeoPoint[],
@@ -243,9 +235,6 @@ export class FastReverseGeocoder {
     return allResults;
   }
 
-  /**
-   * Modern Async/Promise wrapper สำหรับ lookUp
-   */
   public async lookUpAsync(
     points: GeoPoint | GeoPoint[],
     maxResults: number = 1
@@ -256,7 +245,6 @@ export class FastReverseGeocoder {
   private _findNearest(lat: number, lon: number, maxResults: number): GeoResult[] {
     if (!this.stmt) throw new Error('Database statement not initialized.');
 
-    // Adaptive expanding bounding box
     const searchDeltas = [0.5, 1.5, 5.0, 20.0, 90.0];
     let candidates: any[] = [];
 
@@ -277,7 +265,6 @@ export class FastReverseGeocoder {
       return [];
     }
 
-    // Compute exact Haversine distance and sort
     const scored: GeoResult[] = candidates.map((city: any) => {
       const dist = haversineDistance(lat, lon, city.latitude, city.longitude);
       return {
@@ -319,6 +306,5 @@ export class FastReverseGeocoder {
   }
 }
 
-// Default singleton instance
 const defaultInstance = new FastReverseGeocoder();
 export default defaultInstance;

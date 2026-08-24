@@ -1,10 +1,10 @@
 import { Database } from 'bun:sqlite';
 import { existsSync, unlinkSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { glob } from 'node:fs/promises';
 
 const BASE_DIR = import.meta.dir;
-const DB_PATH = join(BASE_DIR, 'geonames.sqlite');
+const DB_PATH = resolve(BASE_DIR, 'geonames.sqlite');
 
 async function findFile(pattern: string): Promise<string | null> {
   const matches: string[] = [];
@@ -22,13 +22,17 @@ async function main() {
   console.log('🚀 Starting GeoNames Bun SQLite ETL build...');
   console.log(`   Database target: ${DB_PATH}`);
 
-  if (existsSync(DB_PATH)) {
-    unlinkSync(DB_PATH);
+  // Clean up any old files
+  for (const ext of ['', '-shm', '-wal']) {
+    const p = `${DB_PATH}${ext}`;
+    if (existsSync(p)) {
+      try { unlinkSync(p); } catch {}
+    }
   }
 
   const db = new Database(DB_PATH);
 
-  // Performance settings
+  // Performance settings for build
   db.run('PRAGMA synchronous = OFF;');
   db.run('PRAGMA journal_mode = MEMORY;');
   db.run('PRAGMA cache_size = -64000;');
@@ -234,21 +238,22 @@ async function main() {
   insertCitiesTx(cityRows, rtreeRows);
   console.log(`   ✅ Imported total of ${count.toLocaleString()} cities into SQLite + R*Tree.`);
 
-  // 4. Finalize
-  console.log('⚡ Optimizing database & building indices...');
+  // 4. Finalize - Set to DELETE mode and VACUUM to ensure single self-contained file (NO WAL dependency)
+  console.log('⚡ Optimizing database & building indices for distribution...');
   db.run('CREATE INDEX IF NOT EXISTS idx_cities_country ON cities(country_code);');
   db.run('CREATE INDEX IF NOT EXISTS idx_cities_admin ON cities(country_code, admin1_code, admin2_code);');
   db.run('PRAGMA synchronous = NORMAL;');
-  db.run('PRAGMA journal_mode = WAL;');
+  db.run('PRAGMA journal_mode = DELETE;');
   db.run('ANALYZE;');
+  db.run('VACUUM;');
 
   db.close();
 
   const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
   const sizeMb = (statSync(DB_PATH).size / (1024 * 1024)).toFixed(2);
 
-  console.log(`\n🎉 Database successfully built in ${elapsed}s!`);
-  console.log(`📊 Final SQLite Database Size: ${sizeMb} MB`);
+  console.log(`\n🎉 Standalone Database successfully built in ${elapsed}s!`);
+  console.log(`📊 Final SQLite Database Size: ${sizeMb} MB (Self-contained, No WAL required)`);
 }
 
 main();
