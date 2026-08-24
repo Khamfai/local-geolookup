@@ -1,14 +1,14 @@
-# geonames-fast-reverse-geocoder
+# local-geolookup
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-1.4+-black.svg?logo=bun)](https://bun.sh)
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg?logo=node.js)](https://nodejs.org)
 
-An **ultra-fast, offline, zero-network reverse geocoder** for **Bun** & **Node.js** powered by **SQLite R*Tree Spatial Index** and [GeoNames](https://www.geonames.org/) database.
+An **offline, zero-network reverse geocoder** for **Bun** & **Node.js** powered by **SQLite R*Tree Spatial Index** and [GeoNames](https://www.geonames.org/) database.
 
 - ⚡ **Instant Startup Time (0.00 ms)** — No waiting for huge TSV/CSV parsing.
-- 🚀 **Ultra Fast (< 0.2 ms / query)** — Over 5,500+ queries/second on Bun.
-- 💾 **Ultra Lightweight (~10 MB RAM)** — Replaces memory-heavy K-D tree packages.
+- 🚀 **High Performance (< 0.2 ms / query)** — Over 5,500+ queries/second on Bun.
+- 💾 **Lightweight (~10 MB RAM)** — Replaces memory-heavy K-D tree packages.
 - 📦 **Offline & Standalone** — Built-in SQLite database covering 168,000+ cities worldwide.
 - 🛠️ **TypeScript First** — Full typings included out-of-the-box.
 
@@ -18,14 +18,14 @@ An **ultra-fast, offline, zero-network reverse geocoder** for **Bun** & **Node.j
 
 ```bash
 # With Bun
-bun add geonames-fast-reverse-geocoder
+bun add local-geolookup
 
 # With npm
-npm install geonames-fast-reverse-geocoder
+npm install local-geolookup
 
 # With yarn / pnpm
-yarn add geonames-fast-reverse-geocoder
-pnpm add geonames-fast-reverse-geocoder
+yarn add local-geolookup
+pnpm add local-geolookup
 ```
 
 ---
@@ -37,7 +37,7 @@ pnpm add geonames-fast-reverse-geocoder
 Returns a single result object (or `null` if no match):
 
 ```typescript
-import geocoder from 'geonames-fast-reverse-geocoder';
+import geocoder from 'local-geolookup';
 
 // Accepts { latitude, longitude }, { lat, lon }, or (lat, lon) numbers:
 const city = geocoder.lookUpOne({ latitude: 13.7563, longitude: 100.5018 });
@@ -68,7 +68,7 @@ console.log(tokyo?.name); // "Ogikubo"
 Compatible with classic `local-reverse-geocoder` API (returns 2D array):
 
 ```typescript
-import geocoder from 'geonames-fast-reverse-geocoder';
+import geocoder from 'local-geolookup';
 
 const points = [
   { latitude: 13.7563, longitude: 100.5018 },
@@ -93,16 +93,16 @@ console.log(result?.name);
 
 ```bash
 # Direct lookup from terminal
-bunx fast-geocoder 13.7563 100.5018
+bunx local-geolookup 13.7563 100.5018
 # or
-npx fast-geocoder 13.7563 100.5018
+npx local-geolookup 13.7563 100.5018
 ```
 
 ---
 
 ## 📊 Benchmark Results (10,000 Points)
 
-| Metric | Classic `local-reverse-geocoder` | **geonames-fast-reverse-geocoder** |
+| Metric | Classic `local-reverse-geocoder` | **local-geolookup** |
 | :--- | :--- | :--- |
 | **Startup Time** | 2,000 – 15,000 ms | **0.00 ms (Instant)** |
 | **Query Latency** | 1.0 – 5.0 ms | **0.19 ms (190 µs)** |

@@ -1,20 +1,27 @@
 {
-  "name": "geonames-fast-reverse-geocoder",
-  "version": "1.0.2",
-  "description": "Ultra-fast offline reverse geocoder for Bun & Node.js using SQLite R*Tree index",
+  "name": "local-geolookup",
+  "version": "1.0.1",
+  "description": "Fast offline reverse geocoder for Bun & Node.js using SQLite R*Tree index",
   "main": "index.js",
   "module": "index.js",
   "types": "index.ts",
   "type": "module",
-  "bin": {
-    "fast-geocoder": "./cli.ts"
+  "exports": {
+    ".": {
+      "bun": "./index.ts",
+      "types": "./index.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
   },
+  "bin": "./cli.js",
   "files": [
     "index.ts",
     "index.js",
     "fast-geocoder.ts",
     "fast-geocoder.js",
     "cli.ts",
+    "cli.js",
     "geonames.sqlite",
     "README.md"
   ],
@@ -28,6 +35,7 @@
     "reverse-geocoding",
     "reverse-geocoder",
     "geocoder",
+    "geolookup",
     "geonames",
     "sqlite",
     "rtree",
@@ -37,6 +45,6 @@
     "coordinates",
     "offline"
   ],
-  "author": "Khamfai",
+  "author": "phai",
   "license": "MIT"
 }
