@@ -26,6 +26,7 @@
     "README.md"
   ],
   "scripts": {
+    "test": "node test/geocoder.test.js",
     "build:db": "bun run build_db.ts",
     "bench": "bun run benchmark.ts",
     "cli": "bun run cli.ts",
@@ -46,5 +47,9 @@
     "offline"
   ],
   "author": "phai",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0",
+    "bun": ">=1.0.0"
+  }
 }

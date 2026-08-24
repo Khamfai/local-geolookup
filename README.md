@@ -14,6 +14,15 @@ An **offline, zero-network reverse geocoder** for **Bun** & **Node.js** powered 
 
 ---
 
+## ⚙️ Requirements
+
+| Runtime | Minimum Version | Note |
+| :--- | :--- | :--- |
+| **Bun** | `>= 1.0.0` (Recommended: `1.4+`) | Uses built-in `bun:sqlite` |
+| **Node.js** | `>= 22.5.0` (Recommended: `22+` / `24+`) | Uses built-in `node:sqlite` (zero dependencies) |
+
+---
+
 ## 📦 Installation
 
 ```bash
