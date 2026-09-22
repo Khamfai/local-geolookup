@@ -15,11 +15,18 @@ jobs:
         node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Bun (install + build)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run build
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Run Unit Tests
+      - name: Run tests on Node
         run: npm test
 
   test-bun:
@@ -27,9 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Run Unit Tests on Bun
-        run: bun test/geocoder.test.js
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run build
+      - name: Run tests on Bun
+        run: bun run test/parse.test.js && bun run test/sqlite.test.js && bun run test/geocoder.test.js

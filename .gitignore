@@ -4,3 +4,11 @@
 *.log
 node_modules
 dist
+CLAUDE.md
+# Raw GeoNames dumps downloaded by scripts/update_data.ts (only data/geonames.sqlite is tracked)
+data/cities1000/
+data/admin1_codes/
+data/admin2_codes/
+*.zip
+docs
+.superpowers

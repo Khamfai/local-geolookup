@@ -1,36 +1,34 @@
 {
   "name": "local-geolookup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Fast offline reverse geocoder for Bun & Node.js using SQLite R*Tree index",
-  "main": "index.js",
-  "module": "index.js",
-  "types": "index.ts",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "bun": "./index.ts",
-      "types": "./index.ts",
-      "import": "./index.js",
-      "default": "./index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
-  "bin": "./cli.js",
+  "bin": {
+    "local-geolookup": "./dist/cli.js"
+  },
   "files": [
-    "index.ts",
-    "index.js",
-    "fast-geocoder.ts",
-    "fast-geocoder.js",
-    "cli.ts",
-    "cli.js",
-    "geonames.sqlite",
+    "dist",
+    "data/geonames.sqlite",
     "README.md"
   ],
   "scripts": {
-    "test": "node test/geocoder.test.js",
-    "build:db": "bun run build_db.ts",
-    "bench": "bun run benchmark.ts",
-    "cli": "bun run cli.ts",
-    "prepublishOnly": "npm pack --dry-run"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node test/parse.test.js && node test/sqlite.test.js && node test/geocoder.test.js",
+    "bench": "bun run scripts/benchmark.ts",
+    "cli": "bun run src/cli.ts",
+    "build:db": "bun run scripts/build_db.ts",
+    "update:data": "bun run scripts/update_data.ts",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "reverse-geocoding",
@@ -51,5 +49,9 @@
   "engines": {
     "node": ">=22.5.0",
     "bun": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "~7.0.2"
   }
 }

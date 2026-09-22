@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import geocoder, { FastReverseGeocoder, haversineDistance } from '../index.js';
+import { fileURLToPath } from 'node:url';
+import geocoder, { FastReverseGeocoder, haversineDistance } from '../dist/index.js';
 
 console.log('🧪 Running Reverse Geocoder Test Suite...\n');
 
@@ -52,5 +53,51 @@ console.log('Test 6: haversineDistance calculation');
 const d = haversineDistance(13.7563, 100.5018, 13.75398, 100.50144);
 assert.ok(d > 0.2 && d < 0.3, 'Distance should be approx 0.26 km');
 console.log('  ✅ Passed (Distance: ' + d.toFixed(3) + ' km)');
+
+// Test 7: invalid point in a batch yields an empty inner array
+console.log('Test 7: lookUp with an invalid point returns []');
+const invalid = geocoder.lookUp([{ latitude: 'nope', longitude: 100 }, { latitude: 13.7563, longitude: 100.5018 }], 1);
+assert.deepStrictEqual(invalid[0], []);
+assert.strictEqual(invalid[1][0].name, 'Bangkok');
+console.log('  ✅ Passed (Invalid point skipped)');
+
+// Test 8: explicit dbPath and close()
+console.log('Test 8: FastReverseGeocoder with explicit dbPath');
+const custom = new FastReverseGeocoder(fileURLToPath(new URL('../data/geonames.sqlite', import.meta.url)));
+assert.strictEqual(custom.lookUpOne(48.8566, 2.3522)?.countryCode, 'FR');
+custom.close();
+assert.throws(() => custom.lookUpOne(48.8566, 2.3522), /Database statement not initialized/);
+console.log('  ✅ Passed (custom instance + close)');
+
+// Test 9: a failed init() preserves the existing working connection and dbPath
+console.log('Test 9: failed init() preserves prior state');
+const previousDbPath = geocoder.dbPath;
+geocoder.init({ dbPath: '/nope/missing.sqlite' }, (err) => {
+  assert.ok(err instanceof Error, 'callback should receive an Error');
+  assert.ok(
+    err.message.startsWith('GeoNames database not found'),
+    'error message should start with "GeoNames database not found"'
+  );
+});
+assert.strictEqual(geocoder.dbPath, previousDbPath, 'dbPath should be unchanged after a failed init');
+assert.strictEqual(
+  geocoder.lookUpOne(13.7563, 100.5018)?.name,
+  'Bangkok',
+  'existing connection should still work after a failed init'
+);
+console.log('  ✅ Passed (state preserved after failed init)');
+
+// Test 10: init() callback arity — success calls back with (null, this)
+console.log('Test 10: init() callback receives (null, instance) on success');
+geocoder.init((err, inst) => {
+  assert.strictEqual(err, null);
+  assert.strictEqual(inst, geocoder);
+});
+console.log('  ✅ Passed (init callback arity restored)');
+
+// Test 11: lookUp accepts tuple points, matching parsePoint's accepted input forms
+console.log('Test 11: lookUp accepts tuple points');
+assert.strictEqual(geocoder.lookUp([[13.7563, 100.5018]], 1)[0][0].name, 'Bangkok');
+console.log('  ✅ Passed (lookUp accepts tuples)');
 
 console.log('\n🎉 All tests passed successfully!');

@@ -1,8 +1,0 @@
-.DS_Store
-*.sqlite-shm
-*.sqlite-wal
-*.log
-node_modules
-build_db.ts
-benchmark.ts
-dist

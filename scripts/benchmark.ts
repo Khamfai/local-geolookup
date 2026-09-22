@@ -1,4 +1,4 @@
-import geocoder from './fast-geocoder';
+import geocoder from '../src/index.js';
 
 console.log('🏁 Running Bun Reverse Geocoder Benchmark (JavaScriptCore + bun:sqlite)...\n');
 

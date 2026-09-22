@@ -3,13 +3,13 @@ import { existsSync, unlinkSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { glob } from 'node:fs/promises';
 
-const BASE_DIR = import.meta.dir;
-const DB_PATH = resolve(BASE_DIR, 'geonames.sqlite');
+const DATA_DIR = resolve(import.meta.dir, '..', 'data');
+const DB_PATH = resolve(DATA_DIR, 'geonames.sqlite');
 
 async function findFile(pattern: string): Promise<string | null> {
   const matches: string[] = [];
-  for await (const file of glob(pattern, { cwd: BASE_DIR })) {
-    matches.push(join(BASE_DIR, file));
+  for await (const file of glob(pattern, { cwd: DATA_DIR })) {
+    matches.push(join(DATA_DIR, file));
   }
   if (matches.length > 0) {
     return matches.sort()[matches.length - 1];
