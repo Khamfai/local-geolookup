@@ -46,6 +46,14 @@
   ],
   "author": "phai",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Khamfai/local-revers-geonames-info.git"
+  },
+  "homepage": "https://github.com/Khamfai/local-revers-geonames-info#readme",
+  "bugs": {
+    "url": "https://github.com/Khamfai/local-revers-geonames-info/issues"
+  },
   "engines": {
     "node": ">=22.5.0",
     "bun": ">=1.0.0"

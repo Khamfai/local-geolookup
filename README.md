@@ -194,6 +194,17 @@ bun run bench      # benchmark against the bundled database
 
 Source lives in `src/` and is compiled once to `dist/`, which runs on both Bun and Node.js. The SQLite driver is chosen at runtime in `src/sqlite.ts`.
 
+### Releasing
+
+Publishing is automated by `.github/workflows/publish.yml`, which runs when a version tag is pushed:
+
+```bash
+npm version minor        # bumps package.json and creates the tag, e.g. v1.1.0
+git push origin main --follow-tags
+```
+
+The workflow refuses to run if the tag does not match `package.json`, then installs, type-checks, builds, runs the tests, and publishes with npm provenance. It needs an `NPM_TOKEN` repository secret (an npm automation token with publish rights) in a GitHub environment named `npm`.
+
 ---
 
 ## 📜 License
