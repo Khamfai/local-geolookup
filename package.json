@@ -48,11 +48,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Khamfai/local-revers-geonames-info.git"
+    "url": "git+https://github.com/Khamfai/local-geolookup.git"
   },
-  "homepage": "https://github.com/Khamfai/local-revers-geonames-info#readme",
+  "homepage": "https://github.com/Khamfai/local-geolookup#readme",
   "bugs": {
-    "url": "https://github.com/Khamfai/local-revers-geonames-info/issues"
+    "url": "https://github.com/Khamfai/local-geolookup/issues"
   },
   "engines": {
     "node": ">=22.5.0",
