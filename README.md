@@ -168,6 +168,15 @@ Numbers vary by machine and run; use `bun run bench` to measure on your own hard
 
 ---
 
+## 🗂️ Data Attribution
+
+The bundled `data/geonames.sqlite` is derived from the [GeoNames](https://www.geonames.org/) gazetteer (`cities1000`, `admin1CodesASCII`, `admin2Codes`), which is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). The data has been modified: it is converted to SQLite, a subset of columns is kept, and an R*Tree index is added. If you redistribute this package or its database, keep this attribution.
+
+The code in this repository is MIT licensed; the GeoNames data is not.
+
+---
+
 ## 📜 License
 
-MIT
+- **Code:** [MIT](https://opensource.org/licenses/MIT)
+- **Bundled data:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), © [GeoNames](https://www.geonames.org/). See Data Attribution above.
