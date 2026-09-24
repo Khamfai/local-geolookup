@@ -176,7 +176,13 @@ The code in this repository is MIT licensed; the GeoNames data is not.
 
 ---
 
+## 🙏 Acknowledgements
+
+The API shape of `lookUp` (points in, `results[pointIndex][rank]` out) and the result field names follow [local-reverse-geocoder](https://github.com/tomayac/local-reverse-geocoder) by Thomas Steiner (Apache License 2.0), so existing code can switch between the two. Portions of the original argument-handling logic were adapted from that project. This package replaces its in-memory K-D tree with a SQLite R*Tree index and shares no runtime code with it.
+
+---
+
 ## 📜 License
 
-- **Code:** [MIT](https://opensource.org/licenses/MIT)
+- **Code:** [MIT](https://opensource.org/licenses/MIT). Portions adapted from [local-reverse-geocoder](https://github.com/tomayac/local-reverse-geocoder), © Thomas Steiner, [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 - **Bundled data:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), © [GeoNames](https://www.geonames.org/). See Data Attribution above.
